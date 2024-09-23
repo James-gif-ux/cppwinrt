@@ -4,7 +4,11 @@
 #define NOMINMAX
 
 #include <windows.h>
+// Ignore some C4771 "a forward declaration of an unscoped enumeration must have an underlying type" warnings in vsdebugeng.h
+#pragma warning( push )
+#pragma warning( disable : 4471 )
 #include <vsdebugeng.h>
+#pragma warning( pop )
 #include <vsdebugeng.templates.h>
 #include <Dia2.h>
 #include "base_includes.h"
