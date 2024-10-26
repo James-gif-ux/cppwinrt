@@ -19,7 +19,7 @@ int32_t __stdcall DllGetActivationFactory(void* classId, void** factory) noexcep
         {
             return 0;
         }
-        
+
         return winrt::hresult_class_not_available(name).to_abi();
     }
     catch (...)
