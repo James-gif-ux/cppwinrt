@@ -1,8 +1,8 @@
 #include "pch.h"
-#include <winrt/test_component.h>
-//#include "winrt/impl/test_component.2.h"
 
-//int32_t __stdcall DllGetLiesAboutInheritance(void** instance) noexcept;
+// Unset lean and mean so we can implement a type from the test_component namespace
+#undef WINRT_LEAN_AND_MEAN
+#include <winrt/test_component.h>
 
 namespace
 {
@@ -22,7 +22,7 @@ void __stdcall WINRT_IMPL_RoFailFastWithErrorContext(int32_t) noexcept
 
 void DoTheUncatcheable(winrt::test_component::LiesAboutInheritance& lies) noexcept
 {
-    //lies.ToString();
+    lies.ToString();
 }
 
 bool CatchTheUncatcheable(winrt::test_component::LiesAboutInheritance& lies) noexcept
@@ -30,6 +30,10 @@ bool CatchTheUncatcheable(winrt::test_component::LiesAboutInheritance& lies) noe
     bool caughtCrash = false;
     __try
     {
+        // We verify that our replacement version of WINRT_IMPL_RoFailFastWithErrorContext is
+        // called.  In a real program that would exit the process.  But this is a test so it
+        // continues execution and hits a nullptr dereference instead.  Eat that known/expected
+        // error and allow execution to continue onto other test cases.
         DoTheUncatcheable(lies);
     }
     __except (EXCEPTION_EXECUTE_HANDLER)
@@ -41,24 +45,12 @@ bool CatchTheUncatcheable(winrt::test_component::LiesAboutInheritance& lies) noe
 
 TEST_CASE("missing_required_interfaces")
 {
-    //HMODULE testComponent = LoadLibraryW(L"test_component.dll");
-    //REQUIRE(testComponent != nullptr);
-    //FARPROC address = GetProcAddress(testComponent, "DllGetLiesAboutInheritance");
-    //REQUIRE(address != nullptr);
-    //auto pfn = reinterpret_cast<decltype(DllGetLiesAboutInheritance)*>(address);
-    //REQUIRE(pfn != nullptr);
-    //const auto liesImpl = winrt::make_self<winrt::test_component::implementation::LiesAboutInheritance>();
+    auto lies = winrt::make_self<LiesAboutInheritance>().as<winrt::test_component::LiesAboutInheritance>();
+    REQUIRE(lies);
+    REQUIRE_NOTHROW(lies.StubMethod());
 
-
-    //winrt::test_component::LiesAboutInheritance lies{ nullptr };
-    //const auto hresult = pfn(winrt::put_abi(lies));
-    //REQUIRE(hresult == 0);
-
-    //REQUIRE(lies);
-    //REQUIRE_NOTHROW(lies.StubMethod());
-
-    //REQUIRE(!g_failfastCalled);
-    //const bool caughtCrash = CatchTheUncatcheable(lies);
-    //REQUIRE(caughtCrash);
-    //REQUIRE(g_failfastCalled);
+    REQUIRE(!g_failfastCalled);
+    const bool caughtCrash = CatchTheUncatcheable(lies);
+    REQUIRE(caughtCrash);
+    REQUIRE(g_failfastCalled);
 }
