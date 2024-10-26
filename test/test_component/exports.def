@@ -1,3 +1,4 @@
 EXPORTS
 DllCanUnloadNow         PRIVATE
 DllGetActivationFactory PRIVATE
+DllGetLiesAboutInheritance PRIVATE
